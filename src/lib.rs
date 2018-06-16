@@ -1,6 +1,8 @@
 extern crate threadpool;
+extern crate regex;
 
 use threadpool::ThreadPool;
+use regex::Regex;
 
 #[cfg(test)]
 mod tests{
@@ -18,5 +20,46 @@ mod tests{
 
 struct Merp{
     pool: ThreadPool,
+    query: Regex,
+    files: Regex,
+}
+
+struct MerpBuilder {
+    workers: usize,
+    query: Option<String>,
+    files: Option<String>,
+}
+
+impl Merp{
+    fn new() -> MerpBuilder {
+        MerpBuilder::new()
+    }
+}
+
+impl MerpBuilder{
+    fn new() -> Self {
+        return Self { workers: 1, query: None, files: None }
+    }
+
+    fn workers(&mut self, w: usize) {
+        self.workers = w;
+    }
+
+    fn query(&mut self, q: String) {
+        self.query = Some(q);
+    }
+
+    fn files(&mut self, f: String) {
+        self.files = Some(f);
+    }
+
+    fn build(self) -> Merp {
+        let q = self.query.unwrap_or(r".*".to_string());
+        let f = self.files.unwrap_or(r"\./.*".to_string());
+        let query = Regex::new(&q).expect("Failed to compile query regexp");
+        let files = Regex::new(&f).expect("Failed to compile files regexp");
+        let pool = ThreadPool::new(self.workers);
+        return Merp {pool, query, files}
+    }
 }
 

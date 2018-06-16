@@ -6,3 +6,4 @@ authors = ["Marten <marten3@kth.se>"]
 [dependencies]
 clap = "2.31.2"
 threadpool = "1.7.1"
+regex = "1.0.0"
