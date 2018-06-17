@@ -3,6 +3,8 @@ extern crate merp;
 
 use clap::{Arg, App};
 
+use merp::Merp;
+
 fn main() {
     let matches = App::new("MERP: Mårtens Excellent Regexmatching Product")
         .version("1.0")
@@ -24,4 +26,10 @@ fn main() {
              .required(true))
         .get_matches();
     println!("Derpaderpa");
+
+    let merp = Merp::new()
+        .files(r"\./.*".to_string())
+        .query(r"".to_string())
+        .build();
+    merp.match_files();
 }

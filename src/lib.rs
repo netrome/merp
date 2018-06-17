@@ -3,6 +3,9 @@ extern crate regex;
 
 use threadpool::ThreadPool;
 use regex::Regex;
+use std::path::Path;
+
+use std::fs::{self, DirEntry, ReadDir};
 
 #[cfg(test)]
 mod tests{
@@ -18,42 +21,63 @@ mod tests{
 // - Merp: job manager (Finds files in system and assigns to matchers): Write own
 // - Matcher: Iterates through a file and finds all lines where "pattern" occurs
 
-struct Merp{
+pub struct Merp{
     pool: ThreadPool,
     query: Regex,
     files: Regex,
 }
 
-struct MerpBuilder {
+pub struct MerpBuilder {
     workers: usize,
     query: Option<String>,
     files: Option<String>,
 }
 
 impl Merp{
-    fn new() -> MerpBuilder {
+    pub fn new() -> MerpBuilder {
         MerpBuilder::new()
     }
+
+    pub fn match_files(&self){
+        let base_dir = String::from(Path::new("./").to_str().expect("sdfg"));
+        let mut q = Vec::new();
+        q.push(base_dir);
+
+        // Search over directories
+        while(!q.is_empty()){
+            let s: String = q.pop().expect("Empty q");
+            let index = Path::new(&s);
+            if index.is_dir(){
+                index
+                    .read_dir().expect(&format!("Unable to read directory: {:?}", index.to_str()))
+                    .for_each(|entry| q.push(String::from(entry.expect("asdfg").path().to_str().unwrap())));
+            }
+            println!("Currently at: {}", s);
+        }
+        //base_dir.read_dir().expect("Unable to read directory").flat_map(|entry| expand(entry) );
+        
+    }
+
 }
 
 impl MerpBuilder{
-    fn new() -> Self {
+    pub fn new() -> Self {
         return Self { workers: 1, query: None, files: None }
     }
 
-    fn workers(&mut self, w: usize) {
-        self.workers = w;
+    pub fn workers(mut self, w: usize) -> Self{
+        self.workers = w; self
     }
 
-    fn query(&mut self, q: String) {
-        self.query = Some(q);
+    pub fn query(mut self, q: String) -> Self {
+        self.query = Some(q); self
     }
 
-    fn files(&mut self, f: String) {
-        self.files = Some(f);
+    pub fn files(mut self, f: String) -> Self{
+        self.files = Some(f); self
     }
 
-    fn build(self) -> Merp {
+    pub fn  build(self) -> Merp {
         let q = self.query.unwrap_or(r".*".to_string());
         let f = self.files.unwrap_or(r"\./.*".to_string());
         let query = Regex::new(&q).expect("Failed to compile query regexp");
@@ -62,4 +86,5 @@ impl MerpBuilder{
         return Merp {pool, query, files}
     }
 }
+
 
