@@ -28,8 +28,8 @@ fn main() {
     println!("Derpaderpa");
 
     let merp = Merp::new()
-        .files(r"\./.*".to_string())
-        .query(r"".to_string())
+        .files(matches.value_of("file").unwrap_or(r"\./.*").to_owned())
+        .query(matches.value_of("query").unwrap_or(r".*").to_owned())
         .build();
     merp.match_files();
 }
