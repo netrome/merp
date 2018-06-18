@@ -10,3 +10,6 @@ No - use merp!
 ## But...
 No! Merp is the best. Merp knows the way (to the matching pattern). We trust merp with our files!
 
+# TODO:
++ Add argument parsing for number of threads and make program use them.
++ Ignore files that can't be opened, instead of breaking execution.

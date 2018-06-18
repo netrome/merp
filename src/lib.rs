@@ -67,7 +67,6 @@ impl Merp{
         }
         Self::drop_tx(tx);
 
-        self.pool.join();
         // Print all received strings
         for s in rx{
             println!("{}", s);
