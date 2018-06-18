@@ -1,4 +1,4 @@
-# Merp - Mårtens Extraordinary Regex Printer
+# Merp - Mårten's Extraordinary Regex Printer
 Traverses the file system and prints lines matching an input pattern - sort of like grep. But it's not grep. It's merp. We love merp, Merp is awesome. Merp is not finished. (We love grep to).
 
 ## Why should I use merp instead of grep?
