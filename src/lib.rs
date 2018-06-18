@@ -4,6 +4,7 @@ extern crate regex;
 use threadpool::ThreadPool;
 use regex::Regex;
 use std::path::Path;
+use std::iter::Iterator;
 
 use std::fs::{self, DirEntry, ReadDir};
 
@@ -42,7 +43,7 @@ impl Merp{
         let base_dir = String::from(Path::new("./").to_str().expect("sdfg"));
         let mut q = Vec::new();
         q.push(base_dir);
-
+        /*
         // Search over directories
         while(!q.is_empty()){
             let s: String = q.pop().expect("Empty q");
@@ -53,11 +54,12 @@ impl Merp{
                     .for_each(|entry| q.push(String::from(entry.expect("asdfg").path().to_str().unwrap())));
             }
             println!("Currently at: {}", s);
+        }*/
+        let mut iter = FileIter{ q:q };
+        for s in iter {
+            println!("Visited: {}", s);
         }
-        //base_dir.read_dir().expect("Unable to read directory").flat_map(|entry| expand(entry) );
-        
     }
-
 }
 
 impl MerpBuilder{
@@ -87,4 +89,28 @@ impl MerpBuilder{
     }
 }
 
+// TODO: Re-implement the search as an iterator
+struct FileIter{q: Vec<String>}
+
+impl Iterator for FileIter{
+    type Item = String;
+    fn next(&mut self) -> Option<String>{
+        if let Some(s) = self.q.pop(){
+            let mut c = false;
+            {
+                let f = Path::new(&s);
+                c = f.is_file();
+                if f.is_dir(){
+                    f   .read_dir().expect(&format!("Unable to read directory: {:?}", f.to_str()))
+                        .for_each(|entry| self.q.push(String::from(entry.expect("asd").path().to_str().unwrap())));
+                    return self.next();
+                }
+            }
+            if c{
+                return Some(s);
+            }
+        }
+        return None;
+    }
+}
 
