@@ -6,6 +6,7 @@ use regex::Regex;
 use std::path::Path;
 use std::iter::Iterator;
 use std::sync::mpsc::{channel, Sender};
+use std::io::Error;
 use std::io::prelude::*;
 
 use std::fs::{File};
@@ -52,15 +53,17 @@ impl Merp{
                 // Expensive file search computations here
                 let path = s;  
 
-                let mut f = File::open(&path).expect(&format!("Could not open file: {}", path));
-                let mut content = String::new();
-                let _res = f.read_to_string(&mut content);
+                File::open(&path).and_then(|mut f| {
+                    let mut content = String::new();
+                    let _res = f.read_to_string(&mut content);
 
-                content.lines().enumerate().filter(|(_i, line)| q.is_match(line))
-                    .for_each(|(i, line)| {
-                        let to_send = format!("\n{}: line {} \n{}", path, i, line);
-                        tx.send(to_send).expect("Weird code crash");
-                    });
+                    content.lines().enumerate().filter(|(_i, line)| q.is_match(line))
+                        .for_each(|(i, line)| {
+                            let to_send = format!("\n{}: line {} \n{}", path, i, line);
+                            tx.send(to_send).expect("Weird code crash");
+                        });
+                    Ok("ok")  // Just to satisfy return type. Optimally this should not be necessary.
+                });
             });
 
 
@@ -120,8 +123,10 @@ impl Iterator for FileIter{
                 let f = Path::new(&s);
                 c = f.is_file();
                 if f.is_dir(){
-                    f   .read_dir().expect(&format!("Unable to read directory: {:?}", f.to_str()))
-                        .for_each(|entry| self.q.push(String::from(entry.expect("asd").path().to_str().unwrap())));
+                    f   .read_dir().and_then(|f| {
+                        f.for_each(|entry| self.q.push(String::from(entry.expect("asd").path().to_str().unwrap())));
+                        Ok("ok")
+                    });
                     return self.next();
                 }
             }
