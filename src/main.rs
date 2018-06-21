@@ -16,7 +16,7 @@ fn main() {
              .value_name("FILE")
              .help("Pattern for matching the file name")
              .takes_value(true)
-             .required(true))
+             .required(false))
         .arg(Arg::with_name("query")
              .short("q")
              .long("query")
@@ -24,12 +24,18 @@ fn main() {
              .help("Serch pattern that the merp will look for")
              .takes_value(true)
              .required(true))
+        .arg(Arg::with_name("threads")
+             .short("t")
+             .long("threads")
+             .value_name("THREADS")
+             .required(false))
         .get_matches();
     println!("Derpaderpa");
 
     let merp = Merp::new()
         .files(matches.value_of("file").unwrap_or(r"\./.*").to_owned())
         .query(matches.value_of("query").unwrap_or(r".*").to_owned())
+        .workers(matches.value_of("threads").unwrap_or("1").parse().expect("Threads must be integer value"))
         .build();
     merp.match_files();
 }
